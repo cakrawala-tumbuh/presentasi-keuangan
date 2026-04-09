@@ -45,6 +45,14 @@ jobs:
           [ -d image ] && rsync -av image/ dist/image/ || true
           [ -d themes ] && rsync -av themes/ dist/themes/ || true
 
+      - name: Inject Iconify script ke setiap HTML presentasi
+        run: |
+          # Tambahkan Iconify CDN script sebelum </head> pada setiap HTML hasil build
+          # sehingga <iconify-icon icon="..."> dapat digunakan langsung di slide
+          find dist -name "*.html" ! -name "index.html" | while read f; do
+            sed -i 's|</head>|<script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>\n</head>|' "$f"
+          done
+
       - name: Generate index.html di setiap folder
         run: |
           # Untuk setiap folder di dalam dist/ yang memiliki file .html,
