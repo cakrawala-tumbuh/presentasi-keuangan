@@ -3,7 +3,7 @@ name: Build & Deploy MARP ke GitHub Pages
 on:
   push:
     branches:
-      - main
+      - master
 
 permissions:
   contents: write
