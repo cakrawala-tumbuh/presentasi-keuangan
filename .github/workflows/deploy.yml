@@ -45,21 +45,79 @@ jobs:
           [ -d image ] && rsync -av image/ dist/image/ || true
           [ -d themes ] && rsync -av themes/ dist/themes/ || true
 
-      - name: Inject Iconify script ke setiap HTML presentasi
+      - name: Inline Iconify SVG ke setiap HTML presentasi
         run: |
           python3 - <<'EOF'
-          import glob, os
-          script_tag = '<script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>'
-          for f in glob.glob('dist/**/*.html', recursive=True):
-              if os.path.basename(f) == 'index.html':
+          import glob, os, re
+          import urllib.request
+
+          icon_cache = {}
+
+          def fetch_svg(collection, name):
+              key = f"{collection}:{name}"
+              if key in icon_cache:
+                  return icon_cache[key]
+              url = f"https://api.iconify.design/{collection}/{name}.svg"
+              try:
+                  with urllib.request.urlopen(url, timeout=15) as resp:
+                      svg = resp.read().decode("utf-8").strip()
+                  icon_cache[key] = svg
+                  print(f"  Fetched {key}")
+                  return svg
+              except Exception as e:
+                  print(f"  WARN: gagal fetch {key}: {e}")
+                  icon_cache[key] = None
+                  return None
+
+          def replace_icon(m):
+              attrs = m.group(1)
+              icon_m  = re.search(r'icon=["\']([^"\']+)["\']', attrs)
+              width_m = re.search(r'width=["\']?(\w+)["\']?', attrs)
+              style_m = re.search(r'style=["\']([^"\']+)["\']', attrs)
+              if not icon_m:
+                  return m.group(0)
+              icon_id = icon_m.group(1)
+              if ":" not in icon_id:
+                  return m.group(0)
+              collection, name = icon_id.split(":", 1)
+              width  = width_m.group(1) if width_m else "1em"
+              style  = style_m.group(1) if style_m else ""
+
+              svg = fetch_svg(collection, name)
+              if not svg:
+                  return ""
+
+              # Hapus width/height lama dari tag <svg>, ganti dengan yang baru
+              def patch_svg_tag(tm):
+                  tag = tm.group(0)
+                  tag = re.sub(r'\s+width="[^"]*"', "", tag)
+                  tag = re.sub(r"\s+width='[^']*'", "", tag)
+                  tag = re.sub(r'\s+height="[^"]*"', "", tag)
+                  tag = re.sub(r"\s+height='[^']*'", "", tag)
+                  inline_style = style if style else "display:inline-block"
+                  if "display" not in inline_style:
+                      inline_style = "display:inline-block;" + inline_style
+                  tag = tag.replace("<svg", f'<svg width="{width}" height="{width}" style="{inline_style}" aria-hidden="true"', 1)
+                  return tag
+
+              svg = re.sub(r"<svg\b[^>]*>", patch_svg_tag, svg, count=1)
+              return svg
+
+          pattern = re.compile(r"<iconify-icon\s+([^>]+)>\s*</iconify-icon>")
+
+          for f in glob.glob("dist/**/*.html", recursive=True):
+              if os.path.basename(f) == "index.html":
                   continue
-              with open(f, 'r', encoding='utf-8') as fh:
+              with open(f, "r", encoding="utf-8") as fh:
                   content = fh.read()
-              if '</head>' in content and script_tag not in content:
-                  content = content.replace('</head>', script_tag + '\n</head>', 1)
-                  with open(f, 'w', encoding='utf-8') as fh:
-                      fh.write(content)
-                  print(f'Injected: {f}')
+              if "<iconify-icon" not in content:
+                  continue
+              print(f"Processing: {f}")
+              new_content = pattern.sub(replace_icon, content)
+              if new_content != content:
+                  with open(f, "w", encoding="utf-8") as fh:
+                      fh.write(new_content)
+                  print(f"  Done.")
           EOF
 
       - name: Generate index.html di setiap folder
