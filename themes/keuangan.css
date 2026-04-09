@@ -1,10 +1,12 @@
+/* @theme keuangan */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Poppins:wght@300;400;700&display=swap');
+
 /* =====================================================
    keuangan.css — Custom MARP Theme
    Visual Identity: CANTUM × YPII
    Tahun 2026/2027
    ===================================================== */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Poppins:wght@300;400;700&display=swap');
 
 /* ── Variabel warna ─────────────────────────────────── */
 :root {
