@@ -1,0 +1,113 @@
+name: Build & Deploy MARP ke GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Marp CLI
+        run: npm install -g @marp-team/marp-cli
+
+      - name: Build MARP → HTML
+        run: |
+          # Buat struktur dist/ yang merefleksikan struktur source
+          find keuangan -name "*.md" | while read src; do
+            # Tentukan path output di dist/
+            out="dist/${src%.md}.html"
+            mkdir -p "$(dirname "$out")"
+            marp "$src" \
+              --html \
+              --theme-set themes/ \
+              --output "$out"
+          done
+
+      - name: Salin aset non-MD ke dist/
+        run: |
+          # Salin semua file non-.md dari keuangan/ ke dist/keuangan/
+          rsync -av --exclude="*.md" keuangan/ dist/keuangan/ || true
+          # Salin folder image/ dan themes/ agar gambar dalam presentasi & CSS dapat diakses
+          [ -d image ] && rsync -av image/ dist/image/ || true
+          [ -d themes ] && rsync -av themes/ dist/themes/ || true
+
+      - name: Generate index.html di setiap folder
+        run: |
+          # Untuk setiap folder di dalam dist/ yang memiliki file .html,
+          # buat index.html yang berisi daftar link ke file tersebut.
+          find dist -type d | while read dir; do
+            # Kumpulkan semua HTML di folder ini (kecuali index.html itu sendiri)
+            html_files=$(find "$dir" -maxdepth 1 -name "*.html" ! -name "index.html" | sort)
+            subdirs=$(find "$dir" -maxdepth 1 -mindepth 1 -type d | sort)
+
+            # Hanya buat index jika ada isi (file html atau subfolder)
+            if [ -z "$html_files" ] && [ -z "$subdirs" ]; then
+              continue
+            fi
+
+            # Judul berdasarkan nama folder
+            folder_name=$(basename "$dir")
+            rel_path="${dir#dist/}"
+
+            {
+              echo "<!DOCTYPE html>"
+              echo "<html lang=\"id\">"
+              echo "<head>"
+              echo "  <meta charset=\"UTF-8\">"
+              echo "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">"
+              echo "  <title>Presentasi — ${rel_path:-Beranda}</title>"
+              echo "  <style>"
+              echo "    body { font-family: sans-serif; max-width: 800px; margin: 2rem auto; padding: 0 1rem; }"
+              echo "    h1 { border-bottom: 2px solid #333; padding-bottom: .4rem; }"
+              echo "    ul { list-style: none; padding: 0; }"
+              echo "    li { margin: .5rem 0; }"
+              echo "    a { text-decoration: none; color: #0066cc; }"
+              echo "    a:hover { text-decoration: underline; }"
+              echo "    .folder::before { content: '📁 '; }"
+              echo "    .file::before { content: '🖥 '; }"
+              echo "  </style>"
+              echo "</head>"
+              echo "<body>"
+              echo "  <h1>📊 Presentasi Keuangan YPII</h1>"
+              echo "  <p><em>/${rel_path}</em></p>"
+              echo "  <ul>"
+
+              # Subfolder
+              for subdir in $subdirs; do
+                subname=$(basename "$subdir")
+                echo "    <li class=\"folder\"><a href=\"${subname}/\">$subname</a></li>"
+              done
+
+              # File HTML
+              for file in $html_files; do
+                fname=$(basename "$file")
+                label="${fname%.html}"
+                echo "    <li class=\"file\"><a href=\"${fname}\">$label</a></li>"
+              done
+
+              echo "  </ul>"
+              echo "</body>"
+              echo "</html>"
+            } > "$dir/index.html"
+          done
+
+      - name: Deploy ke gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages
