@@ -55,17 +55,17 @@ Disahkan oleh: Ketua Yayasan Penyelenggaraan Ilahi Indonesia
 &nbsp;→&nbsp;
 <iconify-icon icon="mdi:email-alert-outline" style="color:#9D0A0E;vertical-align:middle"></iconify-icon> SP1
 &nbsp;→&nbsp;
-<iconify-icon icon="mdi:home-search-outline" style="color:#9D0A0E;vertical-align:middle"></iconify-icon> SP2 + Kunjungan Rumah
+<iconify-icon icon="mdi:handshake-outline" style="color:#9D0A0E;vertical-align:middle"></iconify-icon> SP2 + Pertemuan
 &nbsp;→&nbsp;
-<iconify-icon icon="mdi:alert-octagon-outline" style="color:#9D0A0E;vertical-align:middle"></iconify-icon> SP3
+<iconify-icon icon="mdi:home-search-outline" style="color:#9D0A0E;vertical-align:middle"></iconify-icon> SP3 + Kunjungan Rumah
 </div>
 
 | Tahap | Penerbit | Keterangan |
 |---|---|---|
 | <iconify-icon icon="mdi:whatsapp" style="color:#25D366;vertical-align:middle"></iconify-icon> **Pengingat Lunak** | Staf Admin Yayasan Cabang | WhatsApp informal, sebelum jatuh tempo |
 | <iconify-icon icon="mdi:email-alert-outline" style="color:#9D0A0E;vertical-align:middle"></iconify-icon> **SP1** | Koordinator TU Unit | Surat formal pertama, denda mulai berlaku |
-| <iconify-icon icon="mdi:home-search-outline" style="color:#9D0A0E;vertical-align:middle"></iconify-icon> **SP2** | Kepala Sekolah | Kunjungan rumah wajib dilakukan pada tahap ini |
-| <iconify-icon icon="mdi:alert-octagon-outline" style="color:#9D0A0E;vertical-align:middle"></iconify-icon> **SP3** | Kepala Sekolah + co-sign PJ Yayasan Cabang | Eskalasi terakhir sebelum *write-off* |
+| <iconify-icon icon="mdi:handshake-outline" style="color:#9D0A0E;vertical-align:middle"></iconify-icon> **SP2** | Kepala Sekolah | Pertemuan konsultasi wajib tatap muka dengan orang tua/wali |
+| <iconify-icon icon="mdi:home-search-outline" style="color:#9D0A0E;vertical-align:middle"></iconify-icon> **SP3** | Kepala Sekolah + co-sign PJ Yayasan Cabang | Kunjungan rumah investigasi wajib; eskalasi terakhir sebelum *write-off* |
 
 Masa berlaku dan konsekuensi setiap tahap → [DEC-FIN-PIU-001](https://wiki.cantum-ypii.com/bin/view/Home/keuangan/01-pendapatan/04-decision-table/03-eskalasi-piutang-uang-sekolah/)
 
